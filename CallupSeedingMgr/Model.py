@@ -336,7 +336,7 @@ class Result:
 		elif self.cmp_policy == self.ByAbilityPosition:
 			return (abilityToNumeric(self.ability), self.position or 99999999)
 		elif self.cmp_policy == self.ByPoints:
-			return -(self.points or 0)
+			return (-(self.points or 0), self.position or 0)
 		elif self.cmp_policy == self.ByPosition:
 			return self.position or 99999999
 		assert False, 'Invalid cmp_policy'
