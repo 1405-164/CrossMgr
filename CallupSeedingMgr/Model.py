@@ -32,10 +32,10 @@ def normalize_name( s ):
 def normalize_name_lookup( s ):
 	return Utils.removeDiacritic(normalize_name(s)).upper()
 
-def format_uci_id( uci_id ):
+def format_uci_id( uci_id, no_spaces=False ):
 	if not uci_id:
 		return ''
-	return ' '.join( uci_id[i:i+3] for i in range(0, len(uci_id), 3) )
+	return uci_id if no_spaces else' '.join( uci_id[i:i+3] for i in range(0, len(uci_id), 3) )
 	
 def parse_name( name ):
 	name = normalize_name( name )
