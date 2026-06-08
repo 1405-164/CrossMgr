@@ -221,6 +221,11 @@ class MainWin( wx.Frame ):
 		hs.AddSpacer( 48 )
 		hs.Add( self.saveAsExcel, flag=wx.ALL, border=4 )
 		
+		self.writeUCIIDNoSpaces = wx.CheckBox( self, label=_("Write UCI ID without spaces") )
+		self.writeUCIIDNoSpaces.SetValue( False )		
+		hs.AddSpacer( 10 )
+		hs.Add( self.writeUCIIDNoSpaces, flag=wx.ALL, border=4 )
+	
 		outputBoxSizer.Add( hs )
 		
 		mainSizer = wx.BoxSizer( wx.VERTICAL )
@@ -520,7 +525,8 @@ class MainWin( wx.Frame ):
 	def doSaveAsExcel( self, event ):
 		if self.grid.GetNumberRows() == 0:
 			return
-			
+		
+		write_uci_id_no_spaces = self.writeUCIIDNoSpaces.GetValue()
 		fname_excel = self.getOutputExcelName()
 		if os.path.isfile( fname_excel ):
 			if not Utils.MessageOKCancel(
@@ -540,6 +546,7 @@ class MainWin( wx.Frame ):
 				is_callup=self.getIsCallup(),
 				top_riders=self.getTopRiders(),
 				exclude_unranked=self.excludeUnrankedCB.GetValue(),
+				write_uci_id_no_spaces=write_uci_id_no_spaces,
 			)
 		except Exception as e:
 			traceback.print_exc()
