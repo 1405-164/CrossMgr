@@ -100,7 +100,12 @@ class Keypad( wx.Panel ):
 			hbs.Add( btn, flag=wx.EXPAND )
 		
 		vsizer.Add( hbs, flag=wx.EXPAND|wx.TOP, border=4 )
-		
+
+		self.allBtn = MakeKeypadButton( self, label=_('&ALL'), style=wx.EXPAND|wx.GROW, font = font)
+		self.allBtn.SetToolTip(wx.ToolTip(_("Record all riders entered in the race at the current race time.\nRiders recorded less than Min. Possible Lap Time ago are skipped.")))
+		self.allBtn.Bind( wx.EVT_BUTTON, self.onAllPress )
+		vsizer.Add( self.allBtn, flag=wx.EXPAND|wx.TOP, border=4 )
+
 		self.touchBitmap = wx.Bitmap( os.path.join(Utils.getImageFolder(), 'touch24.png'), wx.BITMAP_TYPE_PNG )
 		self.touchButton = wx.BitmapButton( self, bitmap = self.touchBitmap )
 		self.touchButton.Bind( wx.EVT_BUTTON, self.onToggleTouchScreen)
@@ -165,6 +170,47 @@ class Keypad( wx.Panel ):
 		self.controller.refreshLaps()
 		wx.CallAfter( self.numEdit.SetValue, '' )
 	
+	def onAllPress( self, event=None ):
+		race = Model.race
+		if not race or not race.isRunning():
+			return
+
+		# Collect the bib numbers of all riders entered in the race.
+		nums = set()
+		try:
+			externalInfo = race.excelLink.read()
+			nums.update( num for num in externalInfo if num > 0 )
+		except Exception:
+			pass
+		nums.update( race.getRiderNums() )
+
+		# Only record riders still active in the race (skip DNS, DNF, DQ and Pulled).
+		# Also skip riders recorded less than minPossibleLapTime ago (eg. breakaway
+		# riders entered individually just before ALL is pressed for the pack).
+		tNow = race.curRaceTime()
+		minPossibleLapTime = race.minPossibleLapTime
+		Finisher = Model.Rider.Finisher
+		isTimeTrial = race.isTimeTrial
+		def isRecordable( num ):
+			rider = race.riders.get( num, None )
+			if rider is None:
+				return True
+			if rider.status != Finisher:
+				return False
+			if rider.times:
+				tLast = rider.times[-1] + ((rider.firstTime or 0.0) if isTimeTrial else 0.0)
+				if tNow - tLast < minPossibleLapTime:
+					return False
+			return True
+		nums = sorted( num for num in nums if isRecordable(num) )
+		if not nums:
+			return
+
+		mainWin = Utils.getMainWin()
+		if mainWin is not None:
+			mainWin.forecastHistory.logNum( nums )
+		self.controller.refreshLaps()
+
 	def doAction( self, action ):
 		race = Model.race
 		t = race.curRaceTime() if race and race.isRunning() else None
