@@ -145,7 +145,16 @@ function GetVersion($program)
 		exit 1
 	}
 	$versionItem = Get-Content "$builddir/Version.py"
-	$version = $versionItem.Split(' ')[1].Replace("`"", "")
+	# Capture everything after the program name inside the quotes so
+	# version suffixes containing spaces (eg. "BTC Edition") survive.
+	if ($versionItem -match '"\S+\s+(.+)"')
+	{
+		$version = $Matches[1]
+	}
+	else
+	{
+		$version = $versionItem.Split(' ')[1].Replace("`"", "")
+	}
 	Write-Host $program, "Version is", $version
 	return $version
 }
@@ -283,7 +292,7 @@ function Package($program)
 {
 	$builddir = GetBuildDir($program)
 	$version = GetVersion($program)
-	$newinstallname = "${program}_${version}".Replace('.', '_')
+	$newinstallname = "${program}_${version}".Replace('.', '_').Replace(' ', '_')
 	$yeartoday = (Get-Date).Year
 	$curdir = (Get-Item -Path ".\").FullName
 	$sourcepath = "$curdir\dist\$program"
