@@ -1,3 +1,5 @@
+import csv
+import socket
 from math import floor
 
 import Model
@@ -82,5 +84,41 @@ def JPResultsExport( workbook, sheet ):
 				value, style = valueStyle[field]
 				if value is not None:
 					sheetFit.write( row, col, value, style )
-			
+
 			row += 1
+
+def CycloX2Export( csvFName ):
+	''' Write all recorded passings as a cycloX2 lap time data file (Shift_JIS csv). '''
+	race = Model.race
+	if not race:
+		return False
+
+	# Collect (raceTime, bib) of every recorded passing, in chronological order.
+	isTimeTrial = race.isTimeTrial
+	passings = []
+	for num, rider in race.riders.items():
+		offset = (rider.firstTime or 0.0) if isTimeTrial else 0.0
+		passings.extend( (t + offset, num) for t in rider.times )
+	passings.sort()
+
+	# Layout matches the cycloX2 import format ("cycloX2自動" converter sheet).
+	with open( csvFName, 'w', newline='', encoding='cp932', errors='replace' ) as f:
+		w = csv.writer( f )
+		w.writerow( ['__ Cyclox2 によるラップタイムデータ'] )
+		w.writerow( [] )
+		w.writerow( ['__SECTION-DATA'] )
+		w.writerow( ['format_version', 1] )
+		w.writerow( ['entry_group_id', -999] )
+		w.writerow( ['skip_count', 0] )
+		w.writerow( ['machine', socket.gethostname()] )
+		w.writerow( ['operator', 'CrossMgr'] )
+		w.writerow( ['accuracy', 50] )
+		w.writerow( ['at_distance', 0] )
+		w.writerow( ['note', '{} {}'.format(race.name, race.date)] )
+		w.writerow( [] )
+		w.writerow( [] )
+		w.writerow( ['__SECTION-RECORD'] )
+		w.writerow( ['__Time(milli-sec)', 'BodyNumber', '選手名(as HINT not Data)'] )
+		for t, num in passings:
+			w.writerow( [int(round(t * 1000.0)), num] )
+	return True

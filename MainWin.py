@@ -67,7 +67,7 @@ from DNSManager			import DNSManagerDialog
 from USACExport			import USACExport
 from UCIExcel			import UCIExcel
 from VTTAExport			import VTTAExport
-from JPResultsExport	import JPResultsExport
+from JPResultsExport	import JPResultsExport, CycloX2Export
 from CrossResultsExport	import CrossResultsExport
 from WebScorerExport	import WebScorerExport
 from HelpSearch			import HelpSearchDialog, getHelpURL
@@ -3729,24 +3729,36 @@ class MainWin( wx.Frame ):
 			return
 
 		self.showPage( self.iResultsPage )
-		
+
 		xlFName = self.getFormatFilename( 'jpresultsexcel' )
 
 		wb = xlsxwriter.Workbook( xlFName )
 		sheetCur = wb.add_worksheet( 'JP Results' )
 		JPResultsExport( wb, sheetCur )
-		
+
 		AddExcelInfo( wb )
 		try:
 			wb.close()
-			if not silent:
-				if self.launchExcelAfterPublishingResults:
-					webbrowser.open( xlFName, new = 2, autoraise = True )
-				Utils.MessageOK(self, '{}:\n\n   {}'.format(_('Excel file written to'), xlFName), _('Excel Write'))
 		except IOError:
 			Utils.MessageOK(self,
 						'{} "{}".\n\n{}\n{}'.format(_('Cannot write'), xlFName, _('Check if this spreadsheet is open.'), _('If so, close it, and try again.')),
 						_('Excel File Error'), iconMask=wx.ICON_ERROR )
+			return
+
+		# Also write the cycloX2 lap time data (Shift_JIS csv).
+		csvFName = os.path.splitext(self.fileName)[0] + '-cycloX2.csv'
+		try:
+			CycloX2Export( csvFName )
+		except IOError:
+			Utils.MessageOK(self,
+						'{} "{}".\n\n{}\n{}'.format(_('Cannot write'), csvFName, _('Check if this file is open.'), _('If so, close it, and try again.')),
+						_('CycloX2 File Error'), iconMask=wx.ICON_ERROR )
+			return
+
+		if not silent:
+			if self.launchExcelAfterPublishingResults:
+				webbrowser.open( xlFName, new = 2, autoraise = True )
+			Utils.MessageOK(self, '{}:\n\n   {}\n   {}'.format(_('Files written to'), xlFName, csvFName), _('Excel Write'))
 	
 	@logCall
 	def menuUploadUCI( self, event=None, silent=False ):
