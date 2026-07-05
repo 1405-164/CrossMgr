@@ -22,7 +22,7 @@ batchPublishAttr = (
 	BatchAttr('USAC',	_('USAC'),			'usacexcel',	'menuExportUSAC', True, _('as .xls USAC upload file'), fNew('-USAC.xls') ),
 	
 	BatchAttr('VTTA',	_('VTTA'),	 		'vttaexcel', 	'menuExportVTTA', True, _('as .xlsx file'), fNew('-VTTA.xlsx') ),
-	BatchAttr('JPResults',	_('JPResults'),	 'jpresultsexcel','menuExportJPResults', True, _('as .xlsx file'), fNew('-JP.xlsx') ),
+	BatchAttr('JPResults',	_('JPResults'),	 'jpresultsexcel','menuExportJPResults', True, _('as .xlsx file + cycloX2 .csv'), fNew('-JP.xlsx') ),
 	
 	BatchAttr('WebScorer', _('WebScorer'),	'webscorertxt',	'menuExportWebScorer', True, _('as .txt WebScorer upload file'), fNew('-WebScorer.txt') ),
 	BatchAttr('Facebook', _('Facebook'),	None,			'menuPrintPNG', False, _('as .png upload files in Facebook folder'), None ),
