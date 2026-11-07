@@ -57,3 +57,6 @@ compile.TempPoint.ps1
 requirements.txt~
 site/
 helptxt/CrossMgrDocHtml.zip
+
+# Utsunomiya conversion reference output (race result data, not for the repo)
+宇都宮変換ツール/ref_整形後/
